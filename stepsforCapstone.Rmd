@@ -1,0 +1,123 @@
+---
+title: "Capstone-steps-wrangling"
+author: "Juliette Cook"
+date: "11/30/2017"
+output: html_document
+---
+### new file, Rscript
+
+### working directory
+
+###declare packages
+library(tidyverse)
+library(lubridate)
+
+### bring data in - 5 csvs and combine into one dataset - is the working directory the same as the folder that 
+
+
+files <- list.files("charlottesville-on-twitter/",pattern = "csv")
+files
+
+###combining all csv files into a dataset called tweets
+tweets <- do.call(rbind,lapply(paste0("charlottesville-on-twitter/",files[1:4]),read.csv))
+tweets
+
+### take a look at the dataset, gives us observatons and variables (24), str() is better because there is no error?
+glimpse(tweets)
+str(tweets)
+
+### set up so we don't have to read tweets everytime
+saveRDS(tweets,"tweets.rds")
+
+### call tweets.rds - i would like to understand what rds does exactly
+tweets <- readRDS("tweets.rds")
+
+### take a look at all column names
+### resource used: https://blog.exploratory.io/selecting-columns-809bdd1ef615
+colnames(tweets)
+
+#### remove / drop columns - this didn't work 
+tweets %>% select(-id, -user_profile_background_color, -user_location,-user_profile_text_color, -quoted_status_text)
+
+##### remove columns 2nd way
+tweets$id <- NULL
+tweets$user_profile_text_color <- NULL
+tweets$user_profile_background_color <- NULL
+tweets$user_location <- NULL
+tweets$quoted_status_id <- NULL
+
+#### look at existing names so we can change them
+names(tweets)
+names(tweets)[7]<- "followers"
+names(tweets)[6]<- "following"
+names(tweets)[9]<- "time zone"
+names(tweets)[4]<- "totaltweets"
+names(tweets)[5]<- "totallikes"
+names(tweets)[16]<- "repliesto"
+names(tweets)[12]<- "retweet"
+names(tweets)[1]<- "userid"
+names(tweets)[8]<- "description"
+names(tweets)[10]<- "text"
+names(tweets)[11]<- "time_created"
+names(tweets)[13]<- "retweet_text"
+names(tweets)[14]<- "retweet_id"
+names(tweets)[15]<- "quote_retweet"
+names(tweets)[17]<- "reply_to_tweet"
+names(tweets)[18]<- "reply_to_user_id"
+
+
+#### values for each column must make sense
+str(tweets)
+
+
+#### description as character not factor, change this.
+tweets$description = as.character(tweets$description)
+tweets$description
+
+#### text column as character for tweets
+tweets$text = as.character(tweets$text)
+
+
+#### check for NA's in columns
+head(tweets)
+tail(tweets)
+any(is.na(tweets))
+
+#### save tweets as csv
+write.csv(tweets)
+
+#### check columns with all na's as appears in str()
+sum(is.na(tweets))
+
+
+#### check total columns that have the most NA's
+colSums(is.na(tweets))
+
+
+colnames(tweets)
+#### REMOVE the NA's in the following columns:
+tweets$retweet_id <- NULL
+tweets$retweet_text <- NULL
+tweets$reply_to_tweet <- NULL
+tweets$reply_to_user_id <- NULL
+
+##### retweet table - only has 'f' which won't give us a clear indication of the number of retweets 
+str(tweets$retweet)
+tweets$retweet <- NULL
+
+#### look at quote retweet colunm, it is a factor but we want a character 
+class(tweets$quote_retweet)
+tweets$quote_retweet = as.character(tweets$quote_retweet)
+tweets$quote_retweet
+
+#### finding blank entries on quote retweet - is this the same as NA or null. 
+quote_retweet[is.na(tweets$quote_retweet)] ###gives us character(0)
+
+#### look at repliesto column 
+str(tweets$repliesto) 
+#### factor with 5568 levels - want to change this to character
+repliesto = as.character(tweets$repliesto)
+
+####lots of empty "" - what can I do to clean this up more?
+
+#### ask lots of questions and hope to understand more.
